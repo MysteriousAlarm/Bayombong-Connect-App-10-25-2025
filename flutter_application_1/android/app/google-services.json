@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "713327217412",
+    "project_id": "one-bayombong-connect",
+    "storage_bucket": "one-bayombong-connect.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713327217412:android:ea27f0646d904190e09e51",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713327217412-9nc0jqkjjhqt7irdtndn7glmd4r8bq9u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCj3zGAViSaHu9_HPQ2g4Jy1QFtmFuVYPY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713327217412-9nc0jqkjjhqt7irdtndn7glmd4r8bq9u.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "713327217412-122ul34himmkr8qdhqcu7pt925h3vjl6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.flutterApplication1"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
