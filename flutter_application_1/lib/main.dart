@@ -20,21 +20,21 @@ class BayombongConnectApp extends StatelessWidget {
   const BayombongConnectApp({super.key});
 
   // Define your custom color palette
-  static const Color primaryGreen = Color(0xFF006B3A);
-  static const Color secondaryGreen = Color(0xFF35A551);
-  static const Color accentYellow = Color(0xFFFFBE26);
-  static const Color primaryBlue = Color(0xFF004A6D);
+  static const Color primaryGreen = Color(0xFF006B3A); // Dark Green
+  static const Color secondaryGreen = Color(0xFF35A551); // Light Green
+  static const Color accentYellow = Color(0xFFFFBE26); // Yellow
+  static const Color primaryBlue = Color(0xFF004A6D); // Blue
   static const Color white = Color(0xFFFFFFFF);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bayombong Connect',
+      title: 'One Bayombong',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
-        primaryColor: primaryGreen, // Use the dark green as the primary color
-        scaffoldBackgroundColor: white, // Clean white background
+        primaryColor: primaryGreen,
+        scaffoldBackgroundColor: white,
         appBarTheme: const AppBarTheme(
           backgroundColor: primaryGreen,
           elevation: 0,
@@ -46,7 +46,6 @@ class BayombongConnectApp extends StatelessWidget {
           ),
           iconTheme: IconThemeData(color: white),
         ),
-        // Update color scheme to match palette
         colorScheme: ColorScheme.fromSeed(
           seedColor: primaryGreen,
           primary: primaryGreen,
@@ -55,9 +54,9 @@ class BayombongConnectApp extends StatelessWidget {
           background: white,
         ),
         cardTheme: CardThemeData(
-          elevation: 0, // Flat design like the image
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0), // More rounded corners
+            borderRadius: BorderRadius.circular(16.0),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -76,7 +75,6 @@ class BayombongConnectApp extends StatelessWidget {
             fontSize: 24,
             color: primaryGreen,
           ),
-          // Style for the grid item text
           titleMedium: TextStyle(
             color: white,
             fontWeight: FontWeight.bold,
@@ -99,7 +97,6 @@ class BayombongConnectApp extends StatelessWidget {
         ),
       ),
       home: const LoginScreen(),
-      // We use named routes for cleaner navigation
       routes: {
         '/home': (context) => const HomeScreen(),
         '/report': (context) => const ReportProblemScreen(),
@@ -153,13 +150,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-
     setState(() {
       _isLoading = true;
     });
-
     final phoneNumber = _phoneController.text;
-
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
@@ -171,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
         },
         verificationFailed: (FirebaseAuthException e) {
           if (mounted) {
-            setState(() => _isLoading = false); // Stop loading on error
+            setState(() => _isLoading = false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Verification failed: ${e.message}')),
             );
@@ -211,14 +205,37 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Icon(
-                  Icons.security,
-                  size: 100,
-                  color: Theme.of(context).primaryColor,
+                // --- LOGO SECTION ---
+                Container(
+                  height: 150,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.jpg',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.security,
+                          size: 100,
+                          color: Theme.of(context).primaryColor,
+                        );
+                      },
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                // --- APP TITLE ---
                 Text(
-                  'Welcome to\nBayombong Connect',
+                  'Welcome to\nOne Bayombong',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
@@ -244,9 +261,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your phone number';
                       }
-                      if (!value.startsWith('+')) {
-                        return 'Please include the country code (e.g., +63)';
-                      }
                       return null;
                     },
                   ),
@@ -259,14 +273,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       backgroundColor: BayombongConnectApp.secondaryGreen,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'We will send a verification code to this number.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(fontSize: 12),
-                  ),
                 ],
               ],
             ),
@@ -278,10 +284,8 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 // --- PHONE VERIFICATION SCREEN ---
-
 class PhoneVerificationScreen extends StatefulWidget {
   final String verificationId;
-
   const PhoneVerificationScreen({super.key, required this.verificationId});
 
   @override
@@ -295,19 +299,15 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
 
   Future<void> _verifyCode() async {
     if (_codeController.text.isEmpty) return;
-
     setState(() {
       _isLoading = true;
     });
-
     try {
       final credential = PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
         smsCode: _codeController.text,
       );
-
       await FirebaseAuth.instance.signInWithCredential(credential);
-
       if (mounted) {
         Navigator.of(
           context,
@@ -333,8 +333,6 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(32.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 'Enter the 6-digit code sent to your phone.',
@@ -380,7 +378,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bayombong Connect'),
+        title: const Text('One Bayombong'),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications),
@@ -409,7 +407,6 @@ class HomeScreen extends StatelessWidget {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
           children: [
-            // Row 1
             HomeGridItem(
               title: 'Report a Problem',
               icon: Icons.report_problem,
@@ -422,7 +419,6 @@ class HomeScreen extends StatelessWidget {
               color: BayombongConnectApp.accentYellow, // #FFBE26
               onTap: () => Navigator.of(context).pushNamed('/status'),
             ),
-            // Row 2
             HomeGridItem(
               title: 'Emergency Contacts',
               icon: Icons.local_hospital,
@@ -435,7 +431,6 @@ class HomeScreen extends StatelessWidget {
               color: BayombongConnectApp.primaryGreen, // #006B3A
               onTap: () => Navigator.of(context).pushNamed('/announcements'),
             ),
-            // Row 3
             HomeGridItem(
               title: 'Support & FAQs',
               icon: Icons.help_outline,
@@ -460,7 +455,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// REDESIGNED HomeGridItem to match the image
 class HomeGridItem extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -478,7 +472,7 @@ class HomeGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color, // Set the background color of the card
+      color: color,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16.0),
@@ -487,18 +481,12 @@ class HomeGridItem extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 50,
-                color: BayombongConnectApp.white, // White icon
-              ),
+              Icon(icon, size: 50, color: BayombongConnectApp.white),
               const SizedBox(height: 12),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium, // Uses the white, bold style
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ],
           ),
@@ -511,7 +499,6 @@ class HomeGridItem extends StatelessWidget {
 // 3. Report a Problem Screen
 class ReportProblemScreen extends StatefulWidget {
   const ReportProblemScreen({super.key});
-
   @override
   _ReportProblemScreenState createState() => _ReportProblemScreenState();
 }
@@ -535,12 +522,8 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   void _submitReport() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-
       final reportDetails =
-          'Category: $_selectedCategory\n'
-          'Location: ${_locationController.text}\n'
-          'Description: ${_descriptionController.text}';
-
+          'Category: $_selectedCategory\nLocation: ${_locationController.text}\nDescription: ${_descriptionController.text}';
       if (_isOffline) {
         _sendSmsReport(reportDetails);
       } else {
@@ -575,12 +558,10 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
-
     try {
       final user = FirebaseAuth.instance.currentUser;
       final String userId = user?.uid ?? 'anonymous';
       final String userPhone = user?.phoneNumber ?? 'No number';
-
       final Map<String, dynamic> reportData = {
         'userId': userId,
         'userPhone': userPhone,
@@ -590,18 +571,14 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
         'status': 'reported',
         'reportedAt': FieldValue.serverTimestamp(),
       };
-
       await FirebaseFirestore.instance.collection('reports').add(reportData);
-
       if (!mounted) return;
       Navigator.of(context).pop();
-
       _locationController.clear();
       _descriptionController.clear();
       setState(() {
         _selectedCategory = null;
       });
-
       _showConfirmationDialog(
         title: 'Report Submitted',
         content:
@@ -660,7 +637,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                 ),
                 subtitle: Text(
                   _isOffline
-                      ? 'Uses your phone\'s SMS plan. Standard rates may apply.'
+                      ? 'Uses your phone\'s SMS plan.'
                       : 'Uses mobile data or Wi-Fi.',
                 ),
                 value: _isOffline,
@@ -672,7 +649,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                 activeThumbColor: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 24),
-
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 hint: const Text('Select Problem Category'),
@@ -696,26 +672,22 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _locationController,
                 decoration: const InputDecoration(
                   labelText: 'Location / Landmark',
                   prefixIcon: Icon(Icons.location_on),
-                  hintText: 'e.g., "In front of St. Dominic\'s Cathedral"',
                 ),
                 validator: (value) => value == null || value.isEmpty
                     ? 'Please enter a location'
                     : null,
               ),
               const SizedBox(height: 16),
-
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
                   labelText: 'Brief Description',
                   prefixIcon: Icon(Icons.description),
-                  hintText: 'Describe the problem in detail.',
                 ),
                 maxLines: 4,
                 validator: (value) => value == null || value.isEmpty
@@ -723,8 +695,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                     : null,
               ),
               const SizedBox(height: 16),
-
-              // Note: Image Picker implementation requires 'image_picker' package
               OutlinedButton.icon(
                 icon: const Icon(Icons.camera_alt),
                 label: const Text('Attach Photo (Optional)'),
@@ -742,7 +712,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                   side: BorderSide(color: Theme.of(context).primaryColor),
                 ),
               ),
-
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submitReport,
@@ -770,13 +739,11 @@ class ReportStatusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-
     if (user == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view reports.')),
       );
     }
-
     return Scaffold(
       appBar: AppBar(title: const Text('My Reports Status')),
       body: StreamBuilder<QuerySnapshot>(
@@ -786,36 +753,19 @@ class ReportStatusScreen extends StatelessWidget {
             .orderBy('reportedAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
+          if (snapshot.hasError)
             return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             return const Center(child: CircularProgressIndicator());
-          }
-
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text('No reports submitted yet.'),
-                ],
-              ),
-            );
-          }
-
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+            return const Center(child: Text('No reports submitted yet.'));
           final reports = snapshot.data!.docs;
-
           return ListView.builder(
             padding: const EdgeInsets.all(8.0),
             itemCount: reports.length,
             itemBuilder: (context, index) {
               final doc = reports[index];
               final data = doc.data() as Map<String, dynamic>;
-
               final report = ProblemReport(
                 id: doc.id,
                 category: data['category'] ?? 'Unknown',
@@ -826,7 +776,6 @@ class ReportStatusScreen extends StatelessWidget {
                     (data['reportedAt'] as Timestamp?)?.toDate() ??
                     DateTime.now(),
               );
-
               return ReportStatusCard(report: report);
             },
           );
@@ -849,7 +798,6 @@ class ReportStatusScreen extends StatelessWidget {
 
 class ReportStatusCard extends StatelessWidget {
   final ProblemReport report;
-
   const ReportStatusCard({super.key, required this.report});
 
   String _formatDate(DateTime date) {
@@ -894,7 +842,6 @@ class ReportStatusCard extends StatelessWidget {
     final statusColor = _getStatusColor(report.status, context);
     final statusText = _getStatusText(report.status);
     final statusIcon = _getStatusIcon(report.status);
-
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
       child: Padding(
@@ -943,7 +890,6 @@ class ReportStatusCard extends StatelessWidget {
             const SizedBox(height: 8),
             const Divider(),
             const SizedBox(height: 8),
-
             Text(
               report.description,
               style: Theme.of(context).textTheme.bodyMedium,
@@ -987,7 +933,7 @@ class ReportStatusCard extends StatelessWidget {
   }
 }
 
-// 5. Emergency Contacts Screen (Connected to Firestore)
+// 5. Emergency Contacts Screen
 class EmergencyContactsScreen extends StatelessWidget {
   const EmergencyContactsScreen({super.key});
 
@@ -1034,21 +980,15 @@ class EmergencyContactsScreen extends StatelessWidget {
             .collection('emergency_contacts')
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
+          if (snapshot.hasError)
             return Center(child: Text('Error: ${snapshot.error}'));
-          }
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             return const Center(child: CircularProgressIndicator());
-          }
-
           final contacts = snapshot.data!.docs;
-
-          if (contacts.isEmpty) {
+          if (contacts.isEmpty)
             return const Center(
               child: Text('No contacts available at the moment.'),
             );
-          }
-
           return ListView.builder(
             padding: const EdgeInsets.all(8.0),
             itemCount: contacts.length,
@@ -1057,7 +997,6 @@ class EmergencyContactsScreen extends StatelessWidget {
               final name = data['name'] ?? 'Emergency';
               final number = data['number'] ?? '';
               final type = data['type'] ?? 'general';
-
               return Card(
                 margin: const EdgeInsets.symmetric(
                   vertical: 6.0,
@@ -1096,30 +1035,26 @@ class EmergencyContactsScreen extends StatelessWidget {
 // 6. Announcements Screen
 class AnnouncementsScreen extends StatelessWidget {
   const AnnouncementsScreen({super.key});
-
-  // Mock data for announcements
-  // TODO: Replace with a live stream from Firestore
   static final List<Map<String, String>> _announcements = [
     {
       'title': 'Community Vaccination Drive',
       'date': 'October 30, 2025',
       'body':
-          'Join us for a community-wide vaccination drive at the Municipal Hall. Free flu shots and COVID-19 boosters will be available from 8 AM to 5 PM.',
+          'Join us for a community-wide vaccination drive at the Municipal Hall.',
     },
     {
       'title': 'Road Closure Notification',
       'date': 'October 28, 2025',
       'body':
-          'The National Highway (Brgy. Don Mariano section) will be temporarily closed for repairs from 1 PM to 4 PM. Please take alternate routes.',
+          'The National Highway (Brgy. Don Mariano section) will be temporarily closed.',
     },
     {
       'title': 'Real Property Tax Deadline',
       'date': 'October 25, 2025',
       'body':
-          'This is a final reminder that the deadline for Real Property Tax payments is on October 31, 2025. Pay now to avoid penalties.',
+          'This is a final reminder that the deadline for Real Property Tax payments is on October 31, 2025.',
     },
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1172,7 +1107,6 @@ class AnnouncementsScreen extends StatelessWidget {
 // 7. Support Screen
 class SupportScreen extends StatelessWidget {
   const SupportScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1183,22 +1117,22 @@ class SupportScreen extends StatelessWidget {
           _buildFAQItem(
             context,
             'How do I report a problem?',
-            'Go to the Home Screen and tap on "Report a Problem". Fill out the form with all the required details. You can choose to report via the app (Online) or via SMS (Offline).',
+            'Go to the Home Screen and tap on "Report a Problem".',
           ),
           _buildFAQItem(
             context,
             'How do I track my report?',
-            'Tap on "My Reports Status" from the Home Screen. You will see a list of all your submitted reports and their current status (Reported, Ongoing, or Solved).',
+            'Tap on "My Reports Status" from the Home Screen.',
           ),
           _buildFAQItem(
             context,
             'What is the difference between Online and Offline reporting?',
-            'Online reporting uses your internet connection (Wi-Fi or mobile data) to send the report directly to our system. Offline reporting will open your phone\'s SMS app with a pre-filled message to be sent to a municipal hotline. Standard SMS rates may apply.',
+            'Online uses data. Offline uses SMS.',
           ),
           _buildFAQItem(
             context,
             'Is my data secure?',
-            'Yes, we take user privacy seriously. All data submitted through the app is encrypted. Please see our Privacy Policy for more details.',
+            'Yes, we take user privacy seriously.',
           ),
           const Divider(height: 32),
           Text(
@@ -1271,10 +1205,9 @@ class SupportScreen extends StatelessWidget {
   }
 }
 
-// --- NEW: Profile Screen ---
+// --- Profile Screen ---
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -1320,10 +1253,9 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-// --- NEW: Notifications Screen ---
+// --- Notifications Screen ---
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
