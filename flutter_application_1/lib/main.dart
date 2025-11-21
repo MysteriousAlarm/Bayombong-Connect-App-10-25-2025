@@ -1035,68 +1035,132 @@ class EmergencyContactsScreen extends StatelessWidget {
 // 6. Announcements Screen
 class AnnouncementsScreen extends StatelessWidget {
   const AnnouncementsScreen({super.key});
-  static final List<Map<String, String>> _announcements = [
-    {
-      'title': 'Community Vaccination Drive',
-      'date': 'October 30, 2025',
-      'body':
-          'Join us for a community-wide vaccination drive at the Municipal Hall.',
-    },
-    {
-      'title': 'Road Closure Notification',
-      'date': 'October 28, 2025',
-      'body':
-          'The National Highway (Brgy. Don Mariano section) will be temporarily closed.',
-    },
-    {
-      'title': 'Real Property Tax Deadline',
-      'date': 'October 25, 2025',
-      'body':
-          'This is a final reminder that the deadline for Real Property Tax payments is on October 31, 2025.',
-    },
-  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Announcements')),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(8.0),
-        itemCount: _announcements.length,
-        itemBuilder: (context, index) {
-          final announcement = _announcements[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+      backgroundColor: Colors.grey[100], // Light grey background for feed look
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('announcements')
+            .snapshots(),
+        builder: (context, snapshot) {
+          // 1. Handle Errors
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          // 2. Handle Loading State
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data!.docs;
+
+          // 3. Handle Empty Data
+          if (docs.isEmpty) {
+            return const Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    announcement['title']!,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Posted on: ${announcement['date']!}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    announcement['body']!,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(fontSize: 15, height: 1.4),
-                  ),
+                  Icon(Icons.feed_outlined, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('No announcements yet.'),
                 ],
               ),
-            ),
+            );
+          }
+
+          // 4. Display the Feed
+          return ListView.builder(
+            padding: const EdgeInsets.all(12.0),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              // Get data from Firestore (matching your console fields)
+              final String title = data['title'] ?? 'No Title';
+              final String body = data['body'] ?? '';
+              final String date = data['date'] ?? '';
+              final String source = data['source'] ?? 'LGU Bayombong';
+
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 16.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- Header: Source & Date ---
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).primaryColor.withAlpha(30),
+                            child: Icon(
+                              Icons.person,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  source, // e.g. "Governor Atty. Jose..."
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  date, // e.g. "November 20, 2025"
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      const Divider(),
+                      const SizedBox(height: 12),
+
+                      // --- Title ---
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF004A6D), // Your Primary Blue
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // --- Body Text ---
+                      Text(
+                        body,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          height: 1.5, // Better readability
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
