@@ -4,29 +4,27 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Add these new imports for Firebase
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // For auth
-// We've removed google_sign_in as it's no longer the primary method
-import 'firebase_options.dart'; // This file was created in Step 2
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-// Note: For a real app, you would add packages for:
-// - firebase_auth: for Gmail/Phone login
-// - cloud_firestore: for database
-// - permission_handler: to request SMS permissions
+import 'firebase_options.dart';
 
 // --- Main Application ---
 
 void main() async {
-  // Make this function 'async'
-  // This is required to initialize Firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const BayombongConnectApp());
 }
 
 class BayombongConnectApp extends StatelessWidget {
-  const BayombongConnectApp({super.key}); // FIX: Use super.key
+  const BayombongConnectApp({super.key});
+
+  // Define your custom color palette
+  static const Color primaryGreen = Color(0xFF006B3A);
+  static const Color secondaryGreen = Color(0xFF35A551);
+  static const Color accentYellow = Color(0xFFFFBE26);
+  static const Color primaryBlue = Color(0xFF004A6D);
+  static const Color white = Color(0xFFFFFFFF);
 
   @override
   Widget build(BuildContext context) {
@@ -35,37 +33,37 @@ class BayombongConnectApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
-        primarySwatch: Colors.blue,
-        primaryColor: const Color(0xFF00796B), // A teal/green for government
-        scaffoldBackgroundColor: const Color(
-          0xFFF5F5F5,
-        ), // Light grey background
+        primaryColor: primaryGreen, // Use the dark green as the primary color
+        scaffoldBackgroundColor: white, // Clean white background
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF00796B),
+          backgroundColor: primaryGreen,
           elevation: 0,
+          centerTitle: true,
           titleTextStyle: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
+            color: white,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
-          iconTheme: IconThemeData(color: Colors.white),
+          iconTheme: IconThemeData(color: white),
         ),
-        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue)
-            .copyWith(
-              secondary: const Color(0xFF004D40), // Darker teal
-              brightness: Brightness.light,
-            ),
+        // Update color scheme to match palette
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primaryGreen,
+          primary: primaryGreen,
+          secondary: secondaryGreen,
+          surface: white,
+          background: white,
+        ),
         cardTheme: CardThemeData(
-          // FIX: Changed CardTheme to CardThemeData
-          elevation: 2,
+          elevation: 0, // Flat design like the image
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(16.0), // More rounded corners
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF00796B), // Button color
-            foregroundColor: Colors.white, // Text color
+            backgroundColor: primaryGreen,
+            foregroundColor: white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8.0),
             ),
@@ -76,10 +74,16 @@ class BayombongConnectApp extends StatelessWidget {
           headlineSmall: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
-            color: Color(0xFF333333),
+            color: primaryGreen,
           ),
-          bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF555555)),
-          bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF777777)),
+          // Style for the grid item text
+          titleMedium: TextStyle(
+            color: white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+          bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF333333)),
+          bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF555555)),
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
@@ -88,12 +92,14 @@ class BayombongConnectApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: Color(0xFF00796B), width: 2),
+            borderSide: const BorderSide(color: primaryGreen, width: 2),
           ),
-          labelStyle: const TextStyle(color: Color(0xFF00796B)),
+          labelStyle: const TextStyle(color: primaryGreen),
+          prefixIconColor: primaryGreen,
         ),
       ),
       home: const LoginScreen(),
+      // We use named routes for cleaner navigation
       routes: {
         '/home': (context) => const HomeScreen(),
         '/report': (context) => const ReportProblemScreen(),
@@ -108,7 +114,6 @@ class BayombongConnectApp extends StatelessWidget {
 
 // --- Data Models ---
 
-// Represents a user's problem report
 class ProblemReport {
   final String id;
   final String category;
@@ -127,27 +132,13 @@ class ProblemReport {
   });
 }
 
-// Enum for report status
 enum ReportStatus { reported, ongoing, solved }
-
-// Represents an emergency contact
-class EmergencyContact {
-  final String name;
-  final String number;
-  final IconData icon;
-
-  EmergencyContact({
-    required this.name,
-    required this.number,
-    required this.icon,
-  });
-}
 
 // --- Screens ---
 
 // 1. Login Screen
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key}); // FIX: Use super.key
+  const LoginScreen({super.key});
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -160,38 +151,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loginWithPhone() async {
     if (!_formKey.currentState!.validate()) {
-      return; // Don't submit if form is invalid
+      return;
     }
 
     setState(() {
       _isLoading = true;
     });
 
-    // Make sure to format the phone number correctly, e.g., +639171234567
     final phoneNumber = _phoneController.text;
 
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
-        // (1) Handle Automatic Verification (Android only)
         verificationCompleted: (PhoneAuthCredential credential) async {
-          // This can happen if Firebase automatically verifies the code
           await FirebaseAuth.instance.signInWithCredential(credential);
           if (mounted) {
             Navigator.of(context).pushReplacementNamed('/home');
           }
         },
-        // (2) Handle Failed Verification
         verificationFailed: (FirebaseAuthException e) {
           if (mounted) {
+            setState(() => _isLoading = false); // Stop loading on error
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Verification failed: ${e.message}')),
             );
           }
         },
-        // (3) Handle Code Sent
         codeSent: (String verificationId, int? resendToken) {
-          // Code was sent, now ask user to type it in
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -201,22 +187,14 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
         },
-        // (4) Handle Code Auto-Retrieval Timeout
-        codeAutoRetrievalTimeout: (String verificationId) {
-          // You could auto-resend here, or just let the user manually resend
-        },
+        codeAutoRetrievalTimeout: (String verificationId) {},
       );
     } catch (e) {
       if (mounted) {
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
@@ -233,7 +211,6 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Placeholder for municipality seal
                 Icon(
                   Icons.security,
                   size: 100,
@@ -243,10 +220,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Welcome to\nBayombong Connect',
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 28,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -258,7 +232,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (_isLoading)
                   const Center(child: CircularProgressIndicator())
                 else ...[
-                  // Phone Number Input
                   TextFormField(
                     controller: _phoneController,
                     decoration: const InputDecoration(
@@ -278,15 +251,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 24),
-
-                  // Sign in with Phone Button
                   ElevatedButton.icon(
                     icon: const Icon(Icons.phone, color: Colors.white),
                     label: const Text('Sign in with Phone Number'),
                     onPressed: _loginWithPhone,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green.shade700,
-                      foregroundColor: Colors.white,
+                      backgroundColor: BayombongConnectApp.secondaryGreen,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -307,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-// --- NEW SCREEN FOR PHONE VERIFICATION ---
+// --- PHONE VERIFICATION SCREEN ---
 
 class PhoneVerificationScreen extends StatefulWidget {
   final String verificationId;
@@ -331,18 +301,14 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
     });
 
     try {
-      // Create a PhoneAuthCredential with the code
       final credential = PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
         smsCode: _codeController.text,
       );
 
-      // Sign the user in (or link) with the credential
       await FirebaseAuth.instance.signInWithCredential(credential);
 
-      // Navigate to home screen on success
       if (mounted) {
-        // We use pushReplacementNamed to clear the login stack
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/home', (route) => false);
@@ -394,6 +360,9 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
                 ElevatedButton(
                   onPressed: _verifyCode,
                   child: const Text('Verify and Sign In'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BayombongConnectApp.secondaryGreen,
+                  ),
                 ),
             ],
           ),
@@ -403,9 +372,9 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   }
 }
 
-// 2. Home Screen (Dashboard)
+// 2. Home Screen (Dashboard) - REDESIGNED
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key}); // FIX: Use super.key
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -416,7 +385,6 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              // FIXED: Navigate to Notifications
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const NotificationsScreen(),
@@ -427,7 +395,6 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.account_circle),
             onPressed: () {
-              // FIXED: Navigate to Profile
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
@@ -435,92 +402,56 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: GridView.count(
-        crossAxisCount: 2,
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        children: [
-          HomeGridItem(
-            // FIX: Renamed to public class
-            title: 'Report a Problem',
-            icon: Icons.report_problem,
-            onTap: () => Navigator.of(context).pushNamed('/report'),
-          ),
-          HomeGridItem(
-            // FIX: Renamed to public class
-            title: 'My Reports Status',
-            icon: Icons.history,
-            onTap: () => Navigator.of(context).pushNamed('/status'),
-          ),
-          HomeGridItem(
-            // FIX: Renamed to public class
-            title: 'Emergency Contacts',
-            icon: Icons.local_hospital,
-            onTap: () => Navigator.of(context).pushNamed('/contacts'),
-          ),
-          HomeGridItem(
-            // FIX: Renamed to public class
-            title: 'Announcements',
-            icon: Icons.campaign,
-            onTap: () => Navigator.of(context).pushNamed('/announcements'),
-          ),
-          HomeGridItem(
-            // FIX: Renamed to public class
-            title: 'Support & FAQs',
-            icon: Icons.help_outline,
-            onTap: () => Navigator.of(context).pushNamed('/support'),
-          ),
-          HomeGridItem(
-            // FIX: Renamed to public class
-            title: 'Log Out',
-            icon: Icons.logout,
-            onTap: () {
-              // IMPLEMENTED: Actual sign out logic
-              FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class HomeGridItem extends StatelessWidget {
-  // FIX: Renamed to public class
-  final String title;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const HomeGridItem({
-    // FIX: Renamed to public class
-    super.key, // FIX: Use super.key
-    required this.title,
-    required this.icon,
-    required this.onTap,
-  }); // Removed extra super(key: key)
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
           children: [
-            Icon(icon, size: 48, color: Theme.of(context).primaryColor),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+            // Row 1
+            HomeGridItem(
+              title: 'Report a Problem',
+              icon: Icons.report_problem,
+              color: BayombongConnectApp.secondaryGreen, // #35A551
+              onTap: () => Navigator.of(context).pushNamed('/report'),
+            ),
+            HomeGridItem(
+              title: 'My Reports Status',
+              icon: Icons.history,
+              color: BayombongConnectApp.accentYellow, // #FFBE26
+              onTap: () => Navigator.of(context).pushNamed('/status'),
+            ),
+            // Row 2
+            HomeGridItem(
+              title: 'Emergency Contacts',
+              icon: Icons.local_hospital,
+              color: BayombongConnectApp.primaryBlue, // #004A6D
+              onTap: () => Navigator.of(context).pushNamed('/contacts'),
+            ),
+            HomeGridItem(
+              title: 'Announcements',
+              icon: Icons.campaign,
+              color: BayombongConnectApp.primaryGreen, // #006B3A
+              onTap: () => Navigator.of(context).pushNamed('/announcements'),
+            ),
+            // Row 3
+            HomeGridItem(
+              title: 'Support & FAQs',
+              icon: Icons.help_outline,
+              color: BayombongConnectApp.secondaryGreen, // #35A551
+              onTap: () => Navigator.of(context).pushNamed('/support'),
+            ),
+            HomeGridItem(
+              title: 'Log Out',
+              icon: Icons.logout,
+              color: BayombongConnectApp.accentYellow, // #FFBE26
+              onTap: () {
+                FirebaseAuth.instance.signOut();
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/', (route) => false);
+              },
             ),
           ],
         ),
@@ -529,9 +460,57 @@ class HomeGridItem extends StatelessWidget {
   }
 }
 
+// REDESIGNED HomeGridItem to match the image
+class HomeGridItem extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const HomeGridItem({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: color, // Set the background color of the card
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16.0),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 50,
+                color: BayombongConnectApp.white, // White icon
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium, // Uses the white, bold style
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // 3. Report a Problem Screen
 class ReportProblemScreen extends StatefulWidget {
-  const ReportProblemScreen({super.key}); // FIX: Use super.key
+  const ReportProblemScreen({super.key});
 
   @override
   _ReportProblemScreenState createState() => _ReportProblemScreenState();
@@ -542,7 +521,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   String? _selectedCategory;
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
-  bool _isOffline = false; // Mock toggle for offline/online
+  bool _isOffline = false;
 
   final List<String> _categories = [
     'Waste Management',
@@ -563,24 +542,20 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
           'Description: ${_descriptionController.text}';
 
       if (_isOffline) {
-        // OFFLINE SMS REPORTING
         _sendSmsReport(reportDetails);
       } else {
-        // ONLINE APP REPORTING
         _sendOnlineReport(reportDetails);
       }
     }
   }
 
   Future<void> _sendSmsReport(String details) async {
-    // IMPLEMENTED: This will now try to open the SMS app
     final String smsUri =
         'sms:+639170000000?body=${Uri.encodeComponent(details)}';
     try {
       if (await canLaunchUrl(Uri.parse(smsUri))) {
         await launchUrl(Uri.parse(smsUri));
       } else {
-        // Show an error snackbar
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open SMS app.')),
@@ -595,7 +570,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   }
 
   Future<void> _sendOnlineReport(String details) async {
-    // Show loading indicator
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -603,31 +577,25 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
     );
 
     try {
-      // 1. Get the current user (to know WHO reported it)
       final user = FirebaseAuth.instance.currentUser;
       final String userId = user?.uid ?? 'anonymous';
       final String userPhone = user?.phoneNumber ?? 'No number';
 
-      // 2. Create the data object
-      // We use 'FieldValue.serverTimestamp()' to let the server decide the time
       final Map<String, dynamic> reportData = {
         'userId': userId,
         'userPhone': userPhone,
         'category': _selectedCategory,
         'location': _locationController.text,
         'description': _descriptionController.text,
-        'status': 'reported', // Default status
+        'status': 'reported',
         'reportedAt': FieldValue.serverTimestamp(),
       };
 
-      // 3. Send to Firestore collection named 'reports'
       await FirebaseFirestore.instance.collection('reports').add(reportData);
 
-      // 4. Success!
       if (!mounted) return;
-      Navigator.of(context).pop(); // Close loading dialog
+      Navigator.of(context).pop();
 
-      // Clear the form
       _locationController.clear();
       _descriptionController.clear();
       setState(() {
@@ -641,7 +609,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      Navigator.of(context).pop(); // Close loading dialog
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
@@ -661,8 +629,8 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
           TextButton(
             child: const Text('OK'),
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-              Navigator.of(context).pop(); // Go back from report screen
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
             },
           ),
         ],
@@ -681,7 +649,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Offline/Online Toggle
               SwitchListTile(
                 title: Text(
                   _isOffline
@@ -702,16 +669,12 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                     _isOffline = value;
                   });
                 },
-                activeThumbColor: Theme.of(
-                  context,
-                ).primaryColor, // FIX: Was activeColor
+                activeThumbColor: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 24),
 
-              // Category Dropdown
               DropdownButtonFormField<String>(
-                value:
-                    _selectedCategory, // This is correct, do not change to initialValue
+                value: _selectedCategory,
                 hint: const Text('Select Problem Category'),
                 isExpanded: true,
                 items: _categories.map((String category) {
@@ -734,7 +697,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Location
               TextFormField(
                 controller: _locationController,
                 decoration: const InputDecoration(
@@ -748,7 +710,6 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Description
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
@@ -763,16 +724,18 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               ),
               const SizedBox(height: 16),
 
-              // TODO: Add "Attach Photo" button
-              // This would require image_picker package
+              // Note: Image Picker implementation requires 'image_picker' package
               OutlinedButton.icon(
                 icon: const Icon(Icons.camera_alt),
                 label: const Text('Attach Photo (Optional)'),
                 onPressed: _isOffline
                     ? null
                     : () {
-                        // Can't attach photos to SMS easily
-                        // TODO: Implement image picker
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Image picker not yet implemented'),
+                          ),
+                        );
                       },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).primaryColor,
@@ -808,7 +771,6 @@ class ReportStatusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    // If not logged in (shouldn't happen, but good for safety)
     if (user == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view reports.')),
@@ -817,25 +779,21 @@ class ReportStatusScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Reports Status')),
-      // StreamBuilder listens to the database and updates the UI automatically
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('reports')
-            .where('userId', isEqualTo: user.uid) // Only show MY reports
-            .orderBy('reportedAt', descending: true) // Newest first
+            .where('userId', isEqualTo: user.uid)
+            .orderBy('reportedAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          // 1. Handle Error
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          // 2. Handle Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 3. Handle Empty Data
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Column(
@@ -849,7 +807,6 @@ class ReportStatusScreen extends StatelessWidget {
             );
           }
 
-          // 4. Show List of Reports
           final reports = snapshot.data!.docs;
 
           return ListView.builder(
@@ -859,8 +816,6 @@ class ReportStatusScreen extends StatelessWidget {
               final doc = reports[index];
               final data = doc.data() as Map<String, dynamic>;
 
-              // Convert the data into our ProblemReport object
-              // Note: We handle cases where data might be missing
               final report = ProblemReport(
                 id: doc.id,
                 category: data['category'] ?? 'Unknown',
@@ -880,7 +835,6 @@ class ReportStatusScreen extends StatelessWidget {
     );
   }
 
-  // Helper to convert string status from DB to Enum
   ReportStatus _parseStatus(String? status) {
     switch (status) {
       case 'ongoing':
@@ -896,10 +850,7 @@ class ReportStatusScreen extends StatelessWidget {
 class ReportStatusCard extends StatelessWidget {
   final ProblemReport report;
 
-  const ReportStatusCard({
-    super.key,
-    required this.report,
-  }); // FIX: Use super.key
+  const ReportStatusCard({super.key, required this.report});
 
   String _formatDate(DateTime date) {
     return '${date.month}/${date.day}/${date.year}';
@@ -951,7 +902,6 @@ class ReportStatusCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Status Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -970,9 +920,7 @@ class ReportStatusCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withAlpha(
-                      (255 * 0.1).round(),
-                    ), // FIX: Replaced withOpacity
+                    color: statusColor.withAlpha((255 * 0.1).round()),
                     borderRadius: BorderRadius.circular(20.0),
                   ),
                   child: Row(
@@ -996,7 +944,6 @@ class ReportStatusCard extends StatelessWidget {
             const Divider(),
             const SizedBox(height: 8),
 
-            // Details
             Text(
               report.description,
               style: Theme.of(context).textTheme.bodyMedium,
@@ -1040,12 +987,10 @@ class ReportStatusCard extends StatelessWidget {
   }
 }
 
-// 5. Emergency Contacts Screen
 // 5. Emergency Contacts Screen (Connected to Firestore)
 class EmergencyContactsScreen extends StatelessWidget {
   const EmergencyContactsScreen({super.key});
 
-  // Helper to pick icons based on the 'type' field in the database
   IconData _getIconForType(String? type) {
     switch (type) {
       case 'police':
@@ -1076,7 +1021,7 @@ class EmergencyContactsScreen extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      ).showSnackBar(SnackBar(content: Text('Failed to make call: $e')));
     }
   }
 
@@ -1089,8 +1034,9 @@ class EmergencyContactsScreen extends StatelessWidget {
             .collection('emergency_contacts')
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError)
+          if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
+          }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -1149,9 +1095,10 @@ class EmergencyContactsScreen extends StatelessWidget {
 
 // 6. Announcements Screen
 class AnnouncementsScreen extends StatelessWidget {
-  const AnnouncementsScreen({super.key}); // FIX: Use super.key
+  const AnnouncementsScreen({super.key});
 
   // Mock data for announcements
+  // TODO: Replace with a live stream from Firestore
   static final List<Map<String, String>> _announcements = [
     {
       'title': 'Community Vaccination Drive',
@@ -1224,7 +1171,7 @@ class AnnouncementsScreen extends StatelessWidget {
 
 // 7. Support Screen
 class SupportScreen extends StatelessWidget {
-  const SupportScreen({super.key}); // FIX: Use super.key
+  const SupportScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -1266,18 +1213,14 @@ class SupportScreen extends StatelessWidget {
             title: const Text('Email Support'),
             subtitle: const Text('support@bayombong.gov.ph'),
             onTap: () {
-              // IMPLEMENTED: This will now try to open the email app
               _launchGenericUrl('mailto:support@bayombong.gov.ph', context);
             },
           ),
           ListTile(
             leading: const Icon(Icons.public),
             title: const Text('Visit our Website'),
-            subtitle: const Text(
-              'https://www.bayombong.gov.ph',
-            ), // Use https://
+            subtitle: const Text('https://www.bayombong.gov.ph'),
             onTap: () {
-              // IMPLEMENTED: This will now try to open the browser
               _launchGenericUrl('https://www.bayombong.gov.ph', context);
             },
           ),
@@ -1287,7 +1230,6 @@ class SupportScreen extends StatelessWidget {
   }
 
   Future<void> _launchGenericUrl(String url, BuildContext context) async {
-    // Helper function for email and web
     final Uri uri = Uri.parse(url);
     try {
       if (await canLaunchUrl(uri)) {
@@ -1310,9 +1252,9 @@ class SupportScreen extends StatelessWidget {
     return ExpansionTile(
       title: Text(
         question,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.bold,
-        ), // FIX: Changed Causetext to context
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
       children: [
         Padding(
@@ -1365,7 +1307,6 @@ class ProfileScreen extends StatelessWidget {
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
                 if (context.mounted) {
-                  // Go back to login screen and remove all previous routes
                   Navigator.of(
                     context,
                   ).pushNamedAndRemoveUntil('/', (route) => false);
