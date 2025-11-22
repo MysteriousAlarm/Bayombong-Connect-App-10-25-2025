@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart'; // REQUIRED for camera/gallery
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'firebase_options.dart';
 
 // --- Main Application ---
@@ -17,6 +18,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+// --- ADD THIS BLOCK ---
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.debug,
+  );
+  // ---------------------
+
   runApp(const BayombongConnectApp());
 }
 
