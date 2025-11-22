@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart'; // REQUIRED for camera/gallery
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_app_check/firebase_app_check.dart'; // REQUIRED for App Check
 import 'firebase_options.dart';
 
 // --- Main Application ---
@@ -19,11 +19,13 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-// --- ADD THIS BLOCK ---
+  // --- FIX: Use the Debug Provider for App Check ---
   await FirebaseAppCheck.instance.activate(
+    // This tells Firebase "I am testing, please don't check for strict security"
     androidProvider: AndroidProvider.debug,
+    appleProvider: AppleProvider.debug,
   );
-  // ---------------------
+  // -------------------------------------------------
 
   runApp(const BayombongConnectApp());
 }
@@ -993,20 +995,17 @@ class AnnouncementsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Announcements'),
       ),
-      backgroundColor: Colors.grey[100], // Light background for feed style
+      backgroundColor: Colors.grey[100],
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('announcements').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
           final announcements = snapshot.data!.docs;
-
           if (announcements.isEmpty) {
             return const Center(
               child: Column(
@@ -1019,22 +1018,16 @@ class AnnouncementsScreen extends StatelessWidget {
               ),
             );
           }
-
           return ListView.builder(
             padding: const EdgeInsets.all(12.0),
             itemCount: announcements.length,
             itemBuilder: (context, index) {
               final data = announcements[index].data() as Map<String, dynamic>;
-              
-              // Extract fields with fallbacks
               final title = data['title'] ?? 'Announcement';
               final body = data['body'] ?? '';
               final date = data['date'] ?? 'Just now';
-              
-              // Author details
               final author = data['author'] ?? 'LGU Bayombong';
               final role = data['role'] ?? 'Admin';
-              // Simple logic to pick an avatar color based on the name
               final avatarColor = _getAvatarColor(author);
 
               return Container(
@@ -1053,7 +1046,6 @@ class AnnouncementsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- Header (Author & Role) ---
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Row(
@@ -1086,14 +1078,11 @@ class AnnouncementsScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Icon(Icons.verified, size: 16, color: Colors.blue[400]), // "Verified" badge look
+                          Icon(Icons.verified, size: 16, color: Colors.blue[400]),
                         ],
                       ),
                     ),
-                    
                     const Divider(height: 1, thickness: 0.5),
-
-                    // --- Content (Title & Body) ---
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
@@ -1119,8 +1108,6 @@ class AnnouncementsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-
-                    // --- Footer (Date) ---
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: Text(
