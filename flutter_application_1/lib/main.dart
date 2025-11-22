@@ -1,6 +1,8 @@
+import 'dart:io'; // Needed for File handling
 import 'package:flutter/material.dart';
 // Import this package after adding it to your pubspec.yaml
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart'; // REQUIRED for camera/gallery
 
 // Add these new imports for Firebase
 import 'package:firebase_core/firebase_core.dart';
@@ -12,7 +14,9 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const BayombongConnectApp());
 }
 
@@ -175,8 +179,9 @@ class _LoginScreenState extends State<LoginScreen> {
           if (mounted) {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) =>
-                    PhoneVerificationScreen(verificationId: verificationId),
+                builder: (context) => PhoneVerificationScreen(
+                  verificationId: verificationId,
+                ),
               ),
             );
           }
@@ -186,9 +191,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
       }
     }
   }
@@ -205,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- LOGO SECTION ---
+                // Logo Section
                 Container(
                   height: 150,
                   decoration: BoxDecoration(
@@ -220,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: ClipOval(
                     child: Image.asset(
-                      'assets/images/logo.jpg',
+                      'assets/images/logo.jpg', 
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         return Icon(
@@ -233,7 +238,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // --- APP TITLE ---
                 Text(
                   'Welcome to\nOne Bayombong',
                   textAlign: TextAlign.center,
@@ -289,8 +293,7 @@ class PhoneVerificationScreen extends StatefulWidget {
   const PhoneVerificationScreen({super.key, required this.verificationId});
 
   @override
-  _PhoneVerificationScreenState createState() =>
-      _PhoneVerificationScreenState();
+  _PhoneVerificationScreenState createState() => _PhoneVerificationScreenState();
 }
 
 class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
@@ -299,9 +302,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
 
   Future<void> _verifyCode() async {
     if (_codeController.text.isEmpty) return;
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() { _isLoading = true; });
     try {
       final credential = PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
@@ -309,18 +310,14 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
       if (mounted) {
-        Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil('/home', (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to verify code: $e')));
+        setState(() { _isLoading = false; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to verify code: $e')),
+        );
       }
     }
   }
@@ -370,7 +367,7 @@ class _PhoneVerificationScreenState extends State<PhoneVerificationScreen> {
   }
 }
 
-// 2. Home Screen (Dashboard) - REDESIGNED
+// 2. Home Screen
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -383,19 +380,15 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const NotificationsScreen(),
-                ),
-              );
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen()));
             },
           ),
           IconButton(
             icon: const Icon(Icons.account_circle),
             onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const ProfileScreen()),
-              );
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const ProfileScreen()));
             },
           ),
         ],
@@ -410,42 +403,40 @@ class HomeScreen extends StatelessWidget {
             HomeGridItem(
               title: 'Report a Problem',
               icon: Icons.report_problem,
-              color: BayombongConnectApp.secondaryGreen, // #35A551
+              color: BayombongConnectApp.secondaryGreen,
               onTap: () => Navigator.of(context).pushNamed('/report'),
             ),
             HomeGridItem(
               title: 'My Reports Status',
               icon: Icons.history,
-              color: BayombongConnectApp.accentYellow, // #FFBE26
+              color: BayombongConnectApp.accentYellow,
               onTap: () => Navigator.of(context).pushNamed('/status'),
             ),
             HomeGridItem(
               title: 'Emergency Contacts',
               icon: Icons.local_hospital,
-              color: BayombongConnectApp.primaryBlue, // #004A6D
+              color: BayombongConnectApp.primaryBlue,
               onTap: () => Navigator.of(context).pushNamed('/contacts'),
             ),
             HomeGridItem(
               title: 'Announcements',
               icon: Icons.campaign,
-              color: BayombongConnectApp.primaryGreen, // #006B3A
+              color: BayombongConnectApp.primaryGreen,
               onTap: () => Navigator.of(context).pushNamed('/announcements'),
             ),
             HomeGridItem(
               title: 'Support & FAQs',
               icon: Icons.help_outline,
-              color: BayombongConnectApp.secondaryGreen, // #35A551
+              color: BayombongConnectApp.secondaryGreen,
               onTap: () => Navigator.of(context).pushNamed('/support'),
             ),
             HomeGridItem(
               title: 'Log Out',
               icon: Icons.logout,
-              color: BayombongConnectApp.accentYellow, // #FFBE26
+              color: BayombongConnectApp.accentYellow,
               onTap: () {
                 FirebaseAuth.instance.signOut();
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil('/', (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
               },
             ),
           ],
@@ -496,7 +487,7 @@ class HomeGridItem extends StatelessWidget {
   }
 }
 
-// 3. Report a Problem Screen
+// 3. Report a Problem Screen (UPDATED WITH CAMERA)
 class ReportProblemScreen extends StatefulWidget {
   const ReportProblemScreen({super.key});
   @override
@@ -509,6 +500,10 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   final _descriptionController = TextEditingController();
   final _locationController = TextEditingController();
   bool _isOffline = false;
+  
+  // New: Variable to hold the selected image
+  File? _imageFile;
+  final ImagePicker _picker = ImagePicker();
 
   final List<String> _categories = [
     'Waste Management',
@@ -519,11 +514,67 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
     'Other',
   ];
 
+  // Function to pick image
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 50, // Compress image to save data/storage
+      );
+      
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
+    }
+  }
+
+  // Function to show selection dialog
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Library'),
+                onTap: () {
+                  _pickImage(ImageSource.gallery);
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  _pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _submitReport() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      final reportDetails =
-          'Category: $_selectedCategory\nLocation: ${_locationController.text}\nDescription: ${_descriptionController.text}';
+
+      // In a real app with Firebase Storage, you would upload _imageFile here
+      // and get a URL to add to reportDetails. 
+      // For now, we will just note that an image is attached.
+
+      final reportDetails = 'Category: $_selectedCategory\nLocation: ${_locationController.text}\nDescription: ${_descriptionController.text}';
+
       if (_isOffline) {
         _sendSmsReport(reportDetails);
       } else {
@@ -533,22 +584,17 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   }
 
   Future<void> _sendSmsReport(String details) async {
-    final String smsUri =
-        'sms:+639170000000?body=${Uri.encodeComponent(details)}';
+    final String smsUri = 'sms:+639170000000?body=${Uri.encodeComponent(details)}';
     try {
       if (await canLaunchUrl(Uri.parse(smsUri))) {
         await launchUrl(Uri.parse(smsUri));
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open SMS app.')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open SMS app.')));
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to open SMS app: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to open SMS app: $e')));
     }
   }
 
@@ -570,33 +616,30 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
         'description': _descriptionController.text,
         'status': 'reported',
         'reportedAt': FieldValue.serverTimestamp(),
+        // Note: We are saving the local path for now. 
+        // Real apps need Firebase Storage to upload the actual file to the cloud.
+        'localImagePath': _imageFile?.path ?? '', 
       };
       await FirebaseFirestore.instance.collection('reports').add(reportData);
       if (!mounted) return;
       Navigator.of(context).pop();
       _locationController.clear();
       _descriptionController.clear();
-      setState(() {
-        _selectedCategory = null;
+      setState(() { 
+        _selectedCategory = null; 
+        _imageFile = null;
       });
       _showConfirmationDialog(
-        title: 'Report Submitted',
-        content:
-            'Your report has been successfully sent to the municipality database.',
-      );
+          title: 'Report Submitted',
+          content: 'Your report has been successfully sent to the municipality database.');
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
     }
   }
 
-  void _showConfirmationDialog({
-    required String title,
-    required String content,
-  }) {
+  void _showConfirmationDialog({required String title, required String content}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -605,10 +648,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
         actions: [
           TextButton(
             child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
+            onPressed: () { Navigator.of(context).pop(); Navigator.of(context).pop(); },
           ),
         ],
       ),
@@ -628,24 +668,12 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
             children: [
               SwitchListTile(
                 title: Text(
-                  _isOffline
-                      ? 'Report via SMS (Offline)'
-                      : 'Report via App (Online)',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  _isOffline ? 'Report via SMS (Offline)' : 'Report via App (Online)',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                subtitle: Text(
-                  _isOffline
-                      ? 'Uses your phone\'s SMS plan.'
-                      : 'Uses mobile data or Wi-Fi.',
-                ),
+                subtitle: Text(_isOffline ? 'Uses your phone\'s SMS plan.' : 'Uses mobile data or Wi-Fi.'),
                 value: _isOffline,
-                onChanged: (value) {
-                  setState(() {
-                    _isOffline = value;
-                  });
-                },
+                onChanged: (value) { setState(() { _isOffline = value; }); },
                 activeThumbColor: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 24),
@@ -654,76 +682,75 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                 hint: const Text('Select Problem Category'),
                 isExpanded: true,
                 items: _categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
+                  return DropdownMenuItem<String>(value: category, child: Text(category));
                 }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                },
-                validator: (value) =>
-                    value == null ? 'Please select a category' : null,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  prefixIcon: Icon(Icons.category),
-                ),
+                onChanged: (newValue) { setState(() { _selectedCategory = newValue; }); },
+                validator: (value) => value == null ? 'Please select a category' : null,
+                decoration: const InputDecoration(labelText: 'Category', prefixIcon: Icon(Icons.category)),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location / Landmark',
-                  prefixIcon: Icon(Icons.location_on),
-                ),
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter a location'
-                    : null,
+                decoration: const InputDecoration(labelText: 'Location / Landmark', prefixIcon: Icon(Icons.location_on)),
+                validator: (value) => value == null || value.isEmpty ? 'Please enter a location' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Brief Description',
-                  prefixIcon: Icon(Icons.description),
-                ),
+                decoration: const InputDecoration(labelText: 'Brief Description', prefixIcon: Icon(Icons.description)),
                 maxLines: 4,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter a description'
-                    : null,
+                validator: (value) => value == null || value.isEmpty ? 'Please enter a description' : null,
               ),
               const SizedBox(height: 16),
+              
+              // --- IMAGE PREVIEW SECTION ---
+              if (_imageFile != null)
+                Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                        image: DecorationImage(
+                          image: FileImage(_imageFile!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.cancel, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          _imageFile = null;
+                        });
+                      },
+                    )
+                  ],
+                ),
+
+              // --- IMAGE PICKER BUTTON ---
               OutlinedButton.icon(
                 icon: const Icon(Icons.camera_alt),
                 label: const Text('Attach Photo (Optional)'),
-                onPressed: _isOffline
-                    ? null
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Image picker not yet implemented'),
-                          ),
-                        );
-                      },
+                onPressed: _isOffline ? null : _showImagePickerOptions, // Opens the dialog
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).primaryColor,
                   side: BorderSide(color: Theme.of(context).primaryColor),
                 ),
               ),
+
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _submitReport,
-                child: const Text('Submit Report'),
-              ),
+              ElevatedButton(onPressed: _submitReport, child: const Text('Submit Report')),
             ],
           ),
         ),
       ),
     );
   }
-
   @override
   void dispose() {
     _descriptionController.dispose();
@@ -740,9 +767,7 @@ class ReportStatusScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in to view reports.')),
-      );
+      return const Scaffold(body: Center(child: Text('Please log in to view reports.')));
     }
     return Scaffold(
       appBar: AppBar(title: const Text('My Reports Status')),
@@ -753,12 +778,9 @@ class ReportStatusScreen extends StatelessWidget {
             .orderBy('reportedAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError)
-            return Center(child: Text('Error: ${snapshot.error}'));
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
-            return const Center(child: Text('No reports submitted yet.'));
+          if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text('No reports submitted yet.'));
           final reports = snapshot.data!.docs;
           return ListView.builder(
             padding: const EdgeInsets.all(8.0),
@@ -772,9 +794,7 @@ class ReportStatusScreen extends StatelessWidget {
                 description: data['description'] ?? '',
                 location: data['location'] ?? '',
                 status: _parseStatus(data['status']),
-                reportedAt:
-                    (data['reportedAt'] as Timestamp?)?.toDate() ??
-                    DateTime.now(),
+                reportedAt: (data['reportedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
               );
               return ReportStatusCard(report: report);
             },
@@ -786,12 +806,9 @@ class ReportStatusScreen extends StatelessWidget {
 
   ReportStatus _parseStatus(String? status) {
     switch (status) {
-      case 'ongoing':
-        return ReportStatus.ongoing;
-      case 'solved':
-        return ReportStatus.solved;
-      default:
-        return ReportStatus.reported;
+      case 'ongoing': return ReportStatus.ongoing;
+      case 'solved': return ReportStatus.solved;
+      default: return ReportStatus.reported;
     }
   }
 }
@@ -806,34 +823,25 @@ class ReportStatusCard extends StatelessWidget {
 
   IconData _getStatusIcon(ReportStatus status) {
     switch (status) {
-      case ReportStatus.reported:
-        return Icons.flag;
-      case ReportStatus.ongoing:
-        return Icons.construction;
-      case ReportStatus.solved:
-        return Icons.check_circle;
+      case ReportStatus.reported: return Icons.flag;
+      case ReportStatus.ongoing: return Icons.construction;
+      case ReportStatus.solved: return Icons.check_circle;
     }
   }
 
   Color _getStatusColor(ReportStatus status, BuildContext context) {
     switch (status) {
-      case ReportStatus.reported:
-        return Colors.blue.shade700;
-      case ReportStatus.ongoing:
-        return Colors.orange.shade700;
-      case ReportStatus.solved:
-        return Colors.green.shade700;
+      case ReportStatus.reported: return Colors.blue.shade700;
+      case ReportStatus.ongoing: return Colors.orange.shade700;
+      case ReportStatus.solved: return Colors.green.shade700;
     }
   }
 
   String _getStatusText(ReportStatus status) {
     switch (status) {
-      case ReportStatus.reported:
-        return 'Reported';
-      case ReportStatus.ongoing:
-        return 'Ongoing Process';
-      case ReportStatus.solved:
-        return 'Problem Solved';
+      case ReportStatus.reported: return 'Reported';
+      case ReportStatus.ongoing: return 'Ongoing Process';
+      case ReportStatus.solved: return 'Problem Solved';
     }
   }
 
@@ -855,17 +863,11 @@ class ReportStatusCard extends StatelessWidget {
                 Flexible(
                   child: Text(
                     report.category,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha((255 * 0.1).round()),
                     borderRadius: BorderRadius.circular(20.0),
@@ -874,14 +876,7 @@ class ReportStatusCard extends StatelessWidget {
                     children: [
                       Icon(statusIcon, color: statusColor, size: 16),
                       const SizedBox(width: 6),
-                      Text(
-                        statusText,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
+                      Text(statusText, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -890,40 +885,21 @@ class ReportStatusCard extends StatelessWidget {
             const SizedBox(height: 8),
             const Divider(),
             const SizedBox(height: 8),
-            Text(
-              report.description,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            Text(report.description, style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(
-                  Icons.location_on,
-                  size: 16,
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                ),
+                Icon(Icons.location_on, size: 16, color: Theme.of(context).textTheme.bodyMedium?.color),
                 const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    report.location,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
+                Expanded(child: Text(report.location, style: Theme.of(context).textTheme.bodyMedium)),
               ],
             ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 16,
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
-                ),
+                Icon(Icons.calendar_today, size: 16, color: Theme.of(context).textTheme.bodyMedium?.color),
                 const SizedBox(width: 8),
-                Text(
-                  'Reported on: ${_formatDate(report.reportedAt)}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text('Reported on: ${_formatDate(report.reportedAt)}', style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ],
@@ -939,16 +915,11 @@ class EmergencyContactsScreen extends StatelessWidget {
 
   IconData _getIconForType(String? type) {
     switch (type) {
-      case 'police':
-        return Icons.local_police;
-      case 'fire':
-        return Icons.fire_truck;
-      case 'medical':
-        return Icons.local_hospital;
-      case 'disaster':
-        return Icons.warning;
-      default:
-        return Icons.phone;
+      case 'police': return Icons.local_police;
+      case 'fire': return Icons.fire_truck;
+      case 'medical': return Icons.local_hospital;
+      case 'disaster': return Icons.warning;
+      default: return Icons.phone;
     }
   }
 
@@ -959,15 +930,11 @@ class EmergencyContactsScreen extends StatelessWidget {
         await launchUrl(launchUri);
       } else {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not open dialer for $phoneNumber')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not open dialer for $phoneNumber')));
       }
     } catch (e) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to make call: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to make call: $e')));
     }
   }
 
@@ -976,19 +943,12 @@ class EmergencyContactsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Emergency Contacts')),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('emergency_contacts')
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('emergency_contacts').snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError)
-            return Center(child: Text('Error: ${snapshot.error}'));
-          if (snapshot.connectionState == ConnectionState.waiting)
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
+          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
           final contacts = snapshot.data!.docs;
-          if (contacts.isEmpty)
-            return const Center(
-              child: Text('No contacts available at the moment.'),
-            );
+          if (contacts.isEmpty) return const Center(child: Text('No contacts available at the moment.'));
           return ListView.builder(
             padding: const EdgeInsets.all(8.0),
             itemCount: contacts.length,
@@ -998,28 +958,11 @@ class EmergencyContactsScreen extends StatelessWidget {
               final number = data['number'] ?? '';
               final type = data['type'] ?? 'general';
               return Card(
-                margin: const EdgeInsets.symmetric(
-                  vertical: 6.0,
-                  horizontal: 8.0,
-                ),
+                margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 8.0),
                 child: ListTile(
-                  leading: Icon(
-                    _getIconForType(type),
-                    color: Theme.of(context).primaryColor,
-                    size: 36,
-                  ),
-                  title: Text(
-                    name,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Text(
-                    number,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(fontSize: 16),
-                  ),
+                  leading: Icon(_getIconForType(type), color: Theme.of(context).primaryColor, size: 36),
+                  title: Text(name, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  subtitle: Text(number, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 16)),
                   trailing: const Icon(Icons.call, color: Colors.green),
                   onTap: () => _makeCall(number, context),
                 ),
@@ -1032,34 +975,31 @@ class EmergencyContactsScreen extends StatelessWidget {
   }
 }
 
-// 6. Announcements Screen
+// 6. Announcements Screen (With Social Feed Style)
 class AnnouncementsScreen extends StatelessWidget {
   const AnnouncementsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Announcements')),
-      backgroundColor: Colors.grey[100], // Light grey background for feed look
+      appBar: AppBar(
+        title: const Text('Announcements'),
+      ),
+      backgroundColor: Colors.grey[100], // Light background for feed style
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('announcements')
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('announcements').snapshots(),
         builder: (context, snapshot) {
-          // 1. Handle Errors
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          // 2. Handle Loading State
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final docs = snapshot.data!.docs;
+          final announcements = snapshot.data!.docs;
 
-          // 3. Handle Empty Data
-          if (docs.isEmpty) {
+          if (announcements.isEmpty) {
             return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1072,41 +1012,48 @@ class AnnouncementsScreen extends StatelessWidget {
             );
           }
 
-          // 4. Display the Feed
           return ListView.builder(
             padding: const EdgeInsets.all(12.0),
-            itemCount: docs.length,
+            itemCount: announcements.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
+              final data = announcements[index].data() as Map<String, dynamic>;
+              
+              // Extract fields with fallbacks
+              final title = data['title'] ?? 'Announcement';
+              final body = data['body'] ?? '';
+              final date = data['date'] ?? 'Just now';
+              
+              // Author details
+              final author = data['author'] ?? 'LGU Bayombong';
+              final role = data['role'] ?? 'Admin';
+              // Simple logic to pick an avatar color based on the name
+              final avatarColor = _getAvatarColor(author);
 
-              // Get data from Firestore (matching your console fields)
-              final String title = data['title'] ?? 'No Title';
-              final String body = data['body'] ?? '';
-              final String date = data['date'] ?? '';
-              final String source = data['source'] ?? 'LGU Bayombong';
-
-              return Card(
-                elevation: 2,
+              return Container(
                 margin: const EdgeInsets.only(bottom: 16.0),
-                shape: RoundedRectangleBorder(
+                decoration: BoxDecoration(
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // --- Header: Source & Date ---
-                      Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // --- Header (Author & Role) ---
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).primaryColor.withAlpha(30),
-                            child: Icon(
-                              Icons.person,
-                              color: Theme.of(context).primaryColor,
-                            ),
+                            backgroundColor: avatarColor.withOpacity(0.1),
+                            radius: 20,
+                            child: Icon(Icons.person, color: avatarColor),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -1114,50 +1061,70 @@ class AnnouncementsScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  source, // e.g. "Governor Atty. Jose..."
+                                  author,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                    fontSize: 15,
+                                    color: Colors.black87,
                                   ),
                                 ),
                                 Text(
-                                  date, // e.g. "November 20, 2025"
+                                  role,
                                   style: TextStyle(
-                                    color: Colors.grey[600],
                                     fontSize: 12,
+                                    color: Colors.grey[600],
                                   ),
                                 ),
                               ],
                             ),
                           ),
+                          Icon(Icons.verified, size: 16, color: Colors.blue[400]), // "Verified" badge look
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      const Divider(),
-                      const SizedBox(height: 12),
+                    ),
+                    
+                    const Divider(height: 1, thickness: 0.5),
 
-                      // --- Title ---
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF004A6D), // Your Primary Blue
-                          fontSize: 18,
+                    // --- Content (Title & Body) ---
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            body,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              height: 1.5,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // --- Footer (Date) ---
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: Text(
+                        'Posted on $date',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[500],
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
-                      const SizedBox(height: 8),
-
-                      // --- Body Text ---
-                      Text(
-                        body,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 1.5, // Better readability
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -1165,6 +1132,12 @@ class AnnouncementsScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Color _getAvatarColor(String name) {
+    if (name.contains('Governor')) return Colors.orange;
+    if (name.contains('Mayor')) return Colors.blue;
+    return Colors.green;
   }
 }
 
@@ -1178,93 +1151,29 @@ class SupportScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          _buildFAQItem(
-            context,
-            'How do I report a problem?',
-            'Go to the Home Screen and tap on "Report a Problem".',
-          ),
-          _buildFAQItem(
-            context,
-            'How do I track my report?',
-            'Tap on "My Reports Status" from the Home Screen.',
-          ),
-          _buildFAQItem(
-            context,
-            'What is the difference between Online and Offline reporting?',
-            'Online uses data. Offline uses SMS.',
-          ),
-          _buildFAQItem(
-            context,
-            'Is my data secure?',
-            'Yes, we take user privacy seriously.',
-          ),
+          _buildFAQItem(context, 'How do I report a problem?', 'Go to the Home Screen and tap on "Report a Problem".'),
+          _buildFAQItem(context, 'How do I track my report?', 'Tap on "My Reports Status" from the Home Screen.'),
+          _buildFAQItem(context, 'What is the difference between Online and Offline reporting?', 'Online uses data. Offline uses SMS.'),
+          _buildFAQItem(context, 'Is my data secure?', 'Yes, we take user privacy seriously.'),
           const Divider(height: 32),
-          Text(
-            'Need more help?',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontSize: 20),
-          ),
+          Text('Need more help?', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 20)),
           const SizedBox(height: 16),
-          ListTile(
-            leading: const Icon(Icons.email),
-            title: const Text('Email Support'),
-            subtitle: const Text('support@bayombong.gov.ph'),
-            onTap: () {
-              _launchGenericUrl('mailto:support@bayombong.gov.ph', context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.public),
-            title: const Text('Visit our Website'),
-            subtitle: const Text('https://www.bayombong.gov.ph'),
-            onTap: () {
-              _launchGenericUrl('https://www.bayombong.gov.ph', context);
-            },
-          ),
+          ListTile(leading: const Icon(Icons.email), title: const Text('Email Support'), subtitle: const Text('support@bayombong.gov.ph'), onTap: () { _launchGenericUrl('mailto:support@bayombong.gov.ph', context); }),
+          ListTile(leading: const Icon(Icons.public), title: const Text('Visit our Website'), subtitle: const Text('https://www.bayombong.gov.ph'), onTap: () { _launchGenericUrl('https://www.bayombong.gov.ph', context); }),
         ],
       ),
     );
   }
-
   Future<void> _launchGenericUrl(String url, BuildContext context) async {
     final Uri uri = Uri.parse(url);
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Could not launch $url')));
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to launch: $e')));
-    }
+      if (await canLaunchUrl(uri)) { await launchUrl(uri); } else { if (!context.mounted) return; ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not launch $url'))); }
+    } catch (e) { if (!context.mounted) return; ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to launch: $e'))); }
   }
-
   Widget _buildFAQItem(BuildContext context, String question, String answer) {
     return ExpansionTile(
-      title: Text(
-        question,
-        style: Theme.of(
-          context,
-        ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-      ),
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            answer,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontSize: 15, height: 1.4),
-          ),
-        ),
-      ],
+      title: Text(question, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+      children: [Padding(padding: const EdgeInsets.all(16.0), child: Text(answer, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 15, height: 1.4)))],
     );
   }
 }
@@ -1284,32 +1193,19 @@ class ProfileScreen extends StatelessWidget {
             const Icon(Icons.account_circle, size: 100, color: Colors.grey),
             const SizedBox(height: 20),
             Text('Phone Number', style: Theme.of(context).textTheme.bodyMedium),
-            Text(
-              user?.phoneNumber ?? 'No Number',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
+            Text(user?.phoneNumber ?? 'No Number', style: Theme.of(context).textTheme.headlineSmall),
             const SizedBox(height: 10),
-            Text(
-              'User ID: ${user?.uid.substring(0, 5)}...',
-              style: TextStyle(color: Colors.grey[400]),
-            ),
+            Text('User ID: ${user?.uid.substring(0, 5)}...', style: TextStyle(color: Colors.grey[400])),
             const SizedBox(height: 40),
             ElevatedButton.icon(
               icon: const Icon(Icons.logout),
               label: const Text('Log Out'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
-                if (context.mounted) {
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/', (route) => false);
-                }
+                if (context.mounted) { Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false); }
               },
-            ),
+            )
           ],
         ),
       ),
@@ -1324,16 +1220,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Notifications')),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.notifications_none, size: 80, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No new notifications'),
-          ],
-        ),
-      ),
+      body: const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.notifications_none, size: 80, color: Colors.grey), SizedBox(height: 16), Text('No new notifications')])),
     );
   }
 }
