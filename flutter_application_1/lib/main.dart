@@ -694,16 +694,44 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                 activeThumbColor: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 24),
+              // Updated Dropdown with visible colors
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 hint: const Text('Select Problem Category'),
                 isExpanded: true,
+                // Fix: Set the background color of the popup menu to white
+                dropdownColor: Colors.white,
+                // Fix: Set the text style for the items inside the dropdown
+                style: const TextStyle(color: Colors.black87, fontSize: 16),
                 items: _categories.map((String category) {
-                  return DropdownMenuItem<String>(value: category, child: Text(category));
+                  return DropdownMenuItem<String>(
+                    value: category,
+                    child: Text(
+                      category,
+                      // Ensure individual item text is black
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                  );
                 }).toList(),
-                onChanged: (newValue) { setState(() { _selectedCategory = newValue; }); },
-                validator: (value) => value == null ? 'Please select a category' : null,
-                decoration: const InputDecoration(labelText: 'Category', prefixIcon: Icon(Icons.category)),
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedCategory = newValue;
+                  });
+                },
+                validator: (value) =>
+                    value == null ? 'Please select a category' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category),
+                  // Fix: Ensure the label text is readable
+                  labelStyle: TextStyle(color: Colors.black54),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF006B3A), width: 2),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(
