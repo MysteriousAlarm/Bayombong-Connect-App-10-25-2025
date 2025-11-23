@@ -511,6 +511,7 @@ class ReportProblemScreen extends StatefulWidget {
   _ReportProblemScreenState createState() => _ReportProblemScreenState();
 }
 
+// Report a Problem Screen
 class _ReportProblemScreenState extends State<ReportProblemScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _selectedCategory;
@@ -523,12 +524,13 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   final ImagePicker _picker = ImagePicker();
 
   final List<String> _categories = [
-    'Waste Management',
-    'Broken Streetlight',
-    'Pothole/Road Damage',
-    'Water Leakage',
-    'Noise Complaint',
-    'Other',
+    'Sanitation & Waste (Improper Waste Management, Dirty/Clogged Canals, Water Leakage)',
+    'Infrastructure & Public Works (Potholes, Broken Streetlights, Damaged Road/Bridges)',
+    'Health & Safety (Stray Dogs, Unsanitary Food Establishments, Dengue Concerns) ',
+    'Peace & Order (Noise Complaints, Suspicious Activities, Traffic Violation)',
+    'Disaster & Environment (Flooding, Fallen Trees/Poles, Landslides)',
+    'Social Services (PWD, Senior Citizens, Child Welfare)',
+    'Others',
   ];
 
   // Function to pick image
@@ -538,7 +540,7 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
         source: source,
         imageQuality: 50, // Compress image to save data/storage
       );
-      
+
       if (pickedFile != null) {
         setState(() {
           _imageFile = File(pickedFile.path);
@@ -586,11 +588,8 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      // In a real app with Firebase Storage, you would upload _imageFile here
-      // and get a URL to add to reportDetails. 
-      // For now, we will just note that an image is attached.
-
-      final reportDetails = 'Category: $_selectedCategory\nLocation: ${_locationController.text}\nDescription: ${_descriptionController.text}';
+      final reportDetails =
+          'Category: $_selectedCategory\nLocation: ${_locationController.text}\nDescription: ${_descriptionController.text}';
 
       if (_isOffline) {
         _sendSmsReport(reportDetails);
@@ -601,17 +600,22 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
   }
 
   Future<void> _sendSmsReport(String details) async {
-    final String smsUri = 'sms:+639170000000?body=${Uri.encodeComponent(details)}';
+    final String smsUri =
+        'sms:+639170000000?body=${Uri.encodeComponent(details)}';
     try {
       if (await canLaunchUrl(Uri.parse(smsUri))) {
         await launchUrl(Uri.parse(smsUri));
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open SMS app.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open SMS app.')),
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to open SMS app: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to open SMS app: $e')));
     }
   }
 
@@ -633,30 +637,35 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
         'description': _descriptionController.text,
         'status': 'reported',
         'reportedAt': FieldValue.serverTimestamp(),
-        // Note: We are saving the local path for now. 
-        // Real apps need Firebase Storage to upload the actual file to the cloud.
-        'localImagePath': _imageFile?.path ?? '', 
+        'localImagePath': _imageFile?.path ?? '',
       };
       await FirebaseFirestore.instance.collection('reports').add(reportData);
       if (!mounted) return;
       Navigator.of(context).pop();
       _locationController.clear();
       _descriptionController.clear();
-      setState(() { 
-        _selectedCategory = null; 
+      setState(() {
+        _selectedCategory = null;
         _imageFile = null;
       });
       _showConfirmationDialog(
-          title: 'Report Submitted',
-          content: 'Your report has been successfully sent to the municipality database.');
+        title: 'Report Submitted',
+        content:
+            'Your report has been successfully sent to the municipality database.',
+      );
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
     }
   }
 
-  void _showConfirmationDialog({required String title, required String content}) {
+  void _showConfirmationDialog({
+    required String title,
+    required String content,
+  }) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -665,7 +674,10 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
         actions: [
           TextButton(
             child: const Text('OK'),
-            onPressed: () { Navigator.of(context).pop(); Navigator.of(context).pop(); },
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
           ),
         ],
       ),
@@ -685,70 +697,108 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
             children: [
               SwitchListTile(
                 title: Text(
-                  _isOffline ? 'Report via SMS (Offline)' : 'Report via App (Online)',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                  _isOffline
+                      ? 'Report via SMS (Offline)'
+                      : 'Report via App (Online)',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                subtitle: Text(_isOffline ? 'Uses your phone\'s SMS plan.' : 'Uses mobile data or Wi-Fi.'),
+                subtitle: Text(
+                  _isOffline
+                      ? 'Uses your phone\'s SMS plan.'
+                      : 'Uses mobile data or Wi-Fi.',
+                ),
                 value: _isOffline,
-                onChanged: (value) { setState(() { _isOffline = value; }); },
+                onChanged: (value) {
+                  setState(() {
+                    _isOffline = value;
+                  });
+                },
                 activeThumbColor: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 24),
-              // Updated Dropdown with visible colors
+
+              // --- FIXED DROPDOWN MENU ---
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 hint: const Text('Select Problem Category'),
                 isExpanded: true,
-                // Fix: Set the background color of the popup menu to white
-                dropdownColor: Colors.white,
-                // Fix: Set the text style for the items inside the dropdown
-                style: const TextStyle(color: Colors.black87, fontSize: 16),
-                items: _categories.map((String category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(
-                      category,
-                      // Ensure individual item text is black
-                      style: const TextStyle(color: Colors.black87),
-                    ),
-                  );
-                }).toList(),
+                dropdownColor: Colors.white, // Force white background for menu
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                ), // Force black text for selected item
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: Colors.black54,
+                ), // Visible dropdown arrow
+                items:
+                    _categories.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(
+                          category,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                          ), // Force black text for menu items
+                        ),
+                      );
+                    }).toList(),
                 onChanged: (newValue) {
                   setState(() {
                     _selectedCategory = newValue;
                   });
                 },
-                validator: (value) =>
-                    value == null ? 'Please select a category' : null,
+                validator:
+                    (value) =>
+                        value == null ? 'Please select a category' : null,
                 decoration: const InputDecoration(
                   labelText: 'Category',
                   prefixIcon: Icon(Icons.category),
-                  // Fix: Ensure the label text is readable
-                  labelStyle: TextStyle(color: Colors.black54),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
+                  labelStyle: TextStyle(
+                    color: Colors.black54,
+                  ), // Visible label
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF006B3A), width: 2),
-                  ),
+                  border: OutlineInputBorder(), // Ensure border is visible
                 ),
               ),
+              // ---------------------------
+
               const SizedBox(height: 16),
               TextFormField(
                 controller: _locationController,
-                decoration: const InputDecoration(labelText: 'Location / Landmark', prefixIcon: Icon(Icons.location_on)),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter a location' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Location / Landmark',
+                  prefixIcon: Icon(Icons.location_on),
+                  hintText: 'e.g., "In front of St. Dominic\'s Cathedral"',
+                ),
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? 'Please enter a location'
+                            : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Brief Description', prefixIcon: Icon(Icons.description)),
+                decoration: const InputDecoration(
+                  labelText: 'Brief Description',
+                  prefixIcon: Icon(Icons.description),
+                  hintText: 'Describe the problem in detail.',
+                ),
                 maxLines: 4,
-                validator: (value) => value == null || value.isEmpty ? 'Please enter a description' : null,
+                validator:
+                    (value) =>
+                        value == null || value.isEmpty
+                            ? 'Please enter a description'
+                            : null,
               ),
               const SizedBox(height: 16),
-              
-              // --- IMAGE PREVIEW SECTION ---
+
               if (_imageFile != null)
                 Stack(
                   alignment: Alignment.topRight,
@@ -773,15 +823,14 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
                           _imageFile = null;
                         });
                       },
-                    )
+                    ),
                   ],
                 ),
-
-              // --- IMAGE PICKER BUTTON ---
+          // --- IMAGE PICKER BUTTON ---
               OutlinedButton.icon(
                 icon: const Icon(Icons.camera_alt),
                 label: const Text('Attach Photo (Optional)'),
-                onPressed: _isOffline ? null : _showImagePickerOptions, // Opens the dialog
+                onPressed: _isOffline ? null : _showImagePickerOptions,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).primaryColor,
                   side: BorderSide(color: Theme.of(context).primaryColor),
@@ -789,7 +838,10 @@ class _ReportProblemScreenState extends State<ReportProblemScreen> {
               ),
 
               const SizedBox(height: 32),
-              ElevatedButton(onPressed: _submitReport, child: const Text('Submit Report')),
+              ElevatedButton(
+                onPressed: _submitReport,
+                child: const Text('Submit Report'),
+              ),
             ],
           ),
         ),
