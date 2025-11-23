@@ -10,6 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart'; // REQUIRED for App Check
 import 'firebase_options.dart';
+import 'package:flutter/foundation.dart'; // Needed for kDebugMode
 
 // --- Main Application ---
 
@@ -19,13 +20,19 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // --- FIX: Use the Debug Provider for App Check ---
-  await FirebaseAppCheck.instance.activate(
-    // This tells Firebase "I am testing, please don't check for strict security"
-    androidProvider: AndroidProvider.debug,
-    appleProvider: AppleProvider.debug,
-  );
-  // -------------------------------------------------
+  // --- SMART APP CHECK ---
+  // If we are developing (F5), use Debug. 
+  // If we built an APK (flutter build apk), use Play Integrity (Real Phones).
+  if (kDebugMode) {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.debug,
+    );
+  } else {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: AndroidProvider.playIntegrity,
+    );
+  }
+  // -----------------------
 
   runApp(const BayombongConnectApp());
 }
