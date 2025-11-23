@@ -20,19 +20,17 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // --- SMART APP CHECK ---
-  // If we are developing (F5), use Debug. 
-  // If we built an APK (flutter build apk), use Play Integrity (Real Phones).
-  if (kDebugMode) {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.debug,
-    );
-  } else {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.playIntegrity,
-    );
-  }
-  // -----------------------
+  // --- SMART APP CHECK (TEMPORARILY DISABLED FOR EASY TESTING) ---
+  // if (kDebugMode) {
+  //   await FirebaseAppCheck.instance.activate(
+  //     androidProvider: AndroidProvider.debug,
+  //   );
+  // } else {
+  //   await FirebaseAppCheck.instance.activate(
+  //     androidProvider: AndroidProvider.playIntegrity,
+  //   );
+  // }
+  // -------------------------------------------------------------
 
   runApp(const BayombongConnectApp());
 }
